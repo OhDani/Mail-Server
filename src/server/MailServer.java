@@ -1,5 +1,6 @@
 package server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,6 +9,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MailServer {
     private static final int PORT = 9876;
@@ -55,8 +58,44 @@ public class MailServer {
     }
 
     private static String handleLogin(String credentials) {
-        // Xử lý đăng nhập (nên lưu tài khoản trong database hoặc file)
-        return "LOGIN_SUCCESS"; // Thay đổi theo logic của bạn
+        String[] creds = credentials.split(",");
+        String username = creds[0];
+        String password = creds[1];
+
+        // Đường dẫn đến tệp thông tin tài khoản của người dùng
+        Path userFilePath = Paths.get(BASE_DIR + username + "/" + username + "_new_email.txt");
+
+        // Kiểm tra xem tệp người dùng có tồn tại không
+        if (!Files.exists(userFilePath)) {
+            return "USER_NOT_FOUND"; // Tài khoản không tồn tại
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(userFilePath)) {
+            String line;
+            String storedPassword = null;
+
+            // Đọc tệp để tìm mật khẩu đã lưu
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Password: ")) {
+                    storedPassword = line.substring("Password: ".length()).trim();
+                    break;
+                }
+            }
+
+            // Kiểm tra mật khẩu
+            if (storedPassword == null) {
+                return "INVALID_ACCOUNT_FORMAT"; // Tệp không đúng định dạng
+            }
+
+            if (storedPassword.equals(password)) {
+                return "LOGIN_SUCCESS"; // Đăng nhập thành công
+            } else {
+                return "INVALID_CREDENTIALS"; // Sai mật khẩu
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "ERROR_READING_FILE"; // Lỗi khi đọc tệp
+        }
     }
 
     private static String handleRegister(String credentials) {
@@ -84,9 +123,15 @@ public class MailServer {
         String subject = emailParts[2];
         String content = emailParts[3];
 
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
         try {
-            String emailFileName = subject.replaceAll("[^a-zA-Z0-9]", "_");
-            String emailData = "From: " + sender + "\nTo: " + recipient + "\nSubject: " + subject + "\n\n" + content;
+            String emailFileName = subject;
+            String emailData = "From: " + sender + "\n" +
+                    "To: " + recipient + "\n" +
+                    "Subject: " + subject + "\n" +
+                    "Sent: " + timestamp + "\n\n" + // Thêm thời gian gửi
+                    content;
             Files.write(Paths.get(BASE_DIR + recipient + "/" + emailFileName), emailData.getBytes());
             return "SEND_SUCCESS";
         } catch (IOException e) {
@@ -114,7 +159,7 @@ public class MailServer {
     }
     private void createNewAccountFile(String username, String password) {
         try {
-            String content = "Username: " + username + "\nPassword: " + password + "\nWelcome " + username + "!";
+            String content = "Username: " + username + "\nPassword: " + password + "\nThank you for using this service. we hope that you will feel comfortable!";
             // Sử dụng BASE_DIR để tạo đường dẫn cho tệp
             Path filePath = Paths.get(BASE_DIR + username + "/" + username + "_new_email.txt");
             Files.write(filePath, content.getBytes());

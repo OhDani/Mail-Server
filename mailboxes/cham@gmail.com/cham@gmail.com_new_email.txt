@@ -1,3 +1,0 @@
-Username: cham@gmail.com
-Password: 123
-Welcome cham@gmail.com!

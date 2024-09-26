@@ -145,37 +145,77 @@ public class MailClient {
         sendEmailButton.addActionListener(e -> {
             // Giao diện gửi email
             JFrame sendEmailFrame = new JFrame("Send Email");
-            sendEmailFrame.setSize(400, 300);
+            sendEmailFrame.setSize(500, 400);
             sendEmailFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            sendEmailFrame.setLayout(null);
+            sendEmailFrame.setLayout(new BorderLayout());
 
-            JLabel recipientLabel = new JLabel("Recipient:");
-            recipientLabel.setBounds(50, 30, 100, 25);
-            sendEmailFrame.add(recipientLabel);
+            // Tiêu đề
+            JPanel headerPanel = new JPanel();
+            headerPanel.setLayout(new BorderLayout());
+            JLabel titleLabel = new JLabel("EMAIL", JLabel.CENTER);
+            titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+            headerPanel.add(titleLabel, BorderLayout.CENTER);
+            sendEmailFrame.add(headerPanel, BorderLayout.NORTH);
 
-            JTextField recipientText = new JTextField(20);
-            recipientText.setBounds(150, 30, 200, 25);
-            sendEmailFrame.add(recipientText);
+            // Nội dung gửi email
+            JPanel contentPanel = new JPanel();
+            contentPanel.setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
+            // From Label and TextField
+            JLabel fromLabel = new JLabel("From: " + currentUsername); // Hiển thị người gửi
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2; // Chiếm toàn bộ chiều rộng
+            contentPanel.add(fromLabel, gbc);
+
+            // Recipient Label and TextField
+            JLabel recipientLabel = new JLabel("To:");
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.gridwidth = 1; // Đặt lại chiều rộng cho các trường tiếp theo
+            contentPanel.add(recipientLabel, gbc);
+
+            JTextField recipientText = new JTextField(30);
+            gbc.gridx = 1;
+            contentPanel.add(recipientText, gbc);
+
+            // Subject Label and TextField
             JLabel subjectLabel = new JLabel("Subject:");
-            subjectLabel.setBounds(50, 80, 100, 25);
-            sendEmailFrame.add(subjectLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            contentPanel.add(subjectLabel, gbc);
 
-            JTextField subjectText = new JTextField(20);
-            subjectText.setBounds(150, 80, 200, 25);
-            sendEmailFrame.add(subjectText);
+            JTextField subjectText = new JTextField(30);
+            gbc.gridx = 1;
+            contentPanel.add(subjectText, gbc);
 
+            // Content Label and TextArea
             JLabel contentLabel = new JLabel("Content:");
-            contentLabel.setBounds(50, 130, 100, 25);
-            sendEmailFrame.add(contentLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            contentPanel.add(contentLabel, gbc);
 
-            JTextArea contentText = new JTextArea();
-            contentText.setBounds(150, 130, 200, 80);
-            sendEmailFrame.add(contentText);
+            JTextArea contentText = new JTextArea(8, 30);
+            contentText.setLineWrap(true);
+            contentText.setWrapStyleWord(true);
+            JScrollPane scrollPane = new JScrollPane(contentText);
+            gbc.gridx = 1;
+            gbc.gridy = 3;
+            contentPanel.add(scrollPane, gbc);
 
+            sendEmailFrame.add(contentPanel, BorderLayout.CENTER);
+
+            // Giao diện nút gửi
+            JPanel buttonPanel = new JPanel();
             JButton sendButton = new JButton("Send");
-            sendButton.setBounds(150, 220, 100, 25);
-            sendEmailFrame.add(sendButton);
+            sendButton.setFont(new Font("Arial", Font.BOLD, 14));
+            sendButton.setBackground(new Color(76, 175, 80)); // Màu xanh lá
+            sendButton.setForeground(Color.WHITE);
+            buttonPanel.add(sendButton);
+            sendEmailFrame.add(buttonPanel, BorderLayout.SOUTH);
 
             // Xử lý gửi email
             sendButton.addActionListener(sendE -> {
